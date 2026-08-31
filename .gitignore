@@ -1,11 +1,19 @@
-# Vivado / Xilinx generated files
+# Vivado / Xilinx project directories
 *.cache/
 *.hw/
+*.hw_1/
 *.ip_user_files/
 *.runs/
 *.sim/
+*.gen/
 *.tmp/
+*.data/
 .Xil/
+.ipcache/
+
+# Incremental build checkpoints (often under project.srcs/utils_1/imports/)
+*.dcp
+**/imports/
 
 # Logs and journals
 *.jou
@@ -30,6 +38,44 @@ vivado*.log
 *.ltx
 *.rpt
 *.xsa
+*.mmi
+*.npi
+*.ptwx
+*.vdi
+*.edf
+*.rbd
+*.rpx
+*.bgn
+*.bld
+*.map
+*.mrp
+*.ncd
+*.ngc
+*.ngd
+*.pad
+*.par
+*.pcf
+*.srp
+*.syr
+*.twr
+*.xst
+*.xwb
+*.zip
+
+# HLS generated outputs (keep source under src/, ignore build trees)
+hls.app
+**/solution/impl/
+**/solution/sim/
+**/solution/.autopilot/
+**/solution/impl/ip/
+**/solution/impl/misc/
+**/solution/impl/verilog/
+**/solution/impl/vhdl/
+
+# Vitis / embedded build artifacts
+*.o
+*.elf
+*.a
 
 # Backup files
 *.backup.*
