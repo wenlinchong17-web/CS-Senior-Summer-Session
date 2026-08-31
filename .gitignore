@@ -1,0 +1,43 @@
+# Vivado / Xilinx generated files
+*.cache/
+*.hw/
+*.ip_user_files/
+*.runs/
+*.sim/
+*.tmp/
+.Xil/
+
+# Logs and journals
+*.jou
+*.log
+*.str
+webtalk*.jou
+webtalk*.log
+vivado*.jou
+vivado*.log
+
+# Simulation and debug
+*.wdb
+*.vcd
+*.saif
+*.pb
+*.debug
+
+# Implementation artifacts (regenerate from sources)
+*.bit
+*.bin
+*.mcs
+*.ltx
+*.rpt
+*.xsa
+
+# Backup files
+*.backup.*
+*.bak
+*~
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
