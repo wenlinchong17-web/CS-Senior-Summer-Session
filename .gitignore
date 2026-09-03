@@ -77,7 +77,8 @@ hls.app
 *.elf
 *.a
 
-# Backup files
+# Local xsim work (created by command-line simulation)
+sim_work/
 *.backup.*
 *.bak
 *~
