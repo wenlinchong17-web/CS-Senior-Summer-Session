@@ -5,6 +5,14 @@
 module cpu_top (
     input  wire        clk,
     input  wire        rst,
+
+    // ======== 新增：数据总线接口 ========
+    output wire        mem_we_o,    // CPU写使能
+    output wire [31:0] mem_addr_o,  // CPU想访问的地址
+    output wire [31:0] mem_wdata_o, // CPU想写出的数据
+    input  wire [31:0] mem_rdata_i, // 外部给CPU读入的数据
+    // ====================================
+
     output wire [31:0] dbg_pc,
     output wire        dbg_stall,
     output wire        dbg_flush,
@@ -249,16 +257,13 @@ module cpu_top (
     assign alu_m = alu_m_r;
 
     // =========================================================================
-    // MEM
+    // MEM 级：将原先内部的 dmem 移除，将信号引出到外部总线
     // =========================================================================
-    wire [31:0] dmem_rdata_m;
-    dmem u_dmem (
-        .clk  (clk),
-        .we   (ctrl_m[`C_MEMWRITE]),
-        .addr (alu_m_r),
-        .wdata(store_data_m),
-        .rdata(dmem_rdata_m)
-    );
+    assign mem_we_o    = ctrl_m[`C_MEMWRITE]; // 把写使能送出去
+    assign mem_addr_o  = alu_m_r;             // 把地址送出去
+    assign mem_wdata_o = store_data_m;        // 把要写的数据送出去
+    
+    wire [31:0] dmem_rdata_m = mem_rdata_i;   // 接收外面传进来的数据
 
     // =========================================================================
     // MEM/WB
