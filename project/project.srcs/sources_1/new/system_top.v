@@ -15,15 +15,24 @@ module system_top(
     
     // CPU 例化
     cpu_top u_cpu (
-        .clk        (clk),
-        .rst        (~rst_n),      // 队友的 CPU 可能是高电平复位，这里取反
-        .mem_we_o   (mem_we),
-        .mem_addr_o (mem_addr),
-        .mem_wdata_o(mem_wdata),
-        .mem_rdata_i(mem_rdata),
-        
-        // 调试信号先悬空或接 wire (这里为了简洁省略，实际可接入 ILA)
-        .dbg_pc() // 其他 dbg_ 信号同理不一一列出
+        .clk            (clk),
+        .rst            (~rst_n),
+        .mem_we_o       (mem_we),
+        .mem_addr_o     (mem_addr),
+        .mem_wdata_o    (mem_wdata),
+        .mem_rdata_i    (mem_rdata),
+        .dbg_pc         (),
+        .dbg_stall      (),
+        .dbg_flush      (),
+        .dbg_reg_data   (),
+        .dbg_reg_addr   (5'd0),
+        .dbg_uaddr      (),
+        .dbg_overflow   (),
+        .dbg_epc        (),
+        .dbg_perf_cycles(),
+        .dbg_perf_inst  (),
+        .dbg_perf_stall (),
+        .dbg_perf_flush ()
     );
 
     // ==========================================

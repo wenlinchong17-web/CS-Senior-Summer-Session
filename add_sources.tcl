@@ -19,4 +19,5 @@ set_property top tb_cpu [get_filesets sim_1]
 update_compile_order -fileset sources_1
 update_compile_order -fileset sim_1
 
-puts "RTL and testbench added. Top: cpu_top / tb_cpu"
+puts "RTL and testbench added. Default sim top: tb_cpu"
+puts "To test UART:  set_property top tb_uart [get_filesets sim_1]; update_compile_order -fileset sim_1"

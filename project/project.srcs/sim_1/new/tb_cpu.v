@@ -18,9 +18,18 @@ module tb_cpu;
     wire [31:0] dbg_perf_stall;
     wire [31:0] dbg_perf_flush;
 
+    wire        mem_we;
+    wire [31:0] mem_addr;
+    wire [31:0] mem_wdata;
+    wire [31:0] mem_rdata;
+
     cpu_top dut (
         .clk            (clk),
         .rst            (rst),
+        .mem_we_o       (mem_we),
+        .mem_addr_o     (mem_addr),
+        .mem_wdata_o    (mem_wdata),
+        .mem_rdata_i    (mem_rdata),
         .dbg_pc         (dbg_pc),
         .dbg_stall      (dbg_stall),
         .dbg_flush      (dbg_flush),
@@ -33,6 +42,15 @@ module tb_cpu;
         .dbg_perf_inst  (dbg_perf_inst),
         .dbg_perf_stall (dbg_perf_stall),
         .dbg_perf_flush (dbg_perf_flush)
+    );
+
+    // dmem 已从 cpu_top 拆到总线上，testbench 必须把它接回去，lw/sw 才不是 X
+    dmem u_dmem (
+        .clk  (clk),
+        .we   (mem_we),
+        .addr (mem_addr),
+        .wdata(mem_wdata),
+        .rdata(mem_rdata)
     );
 
     // 波形里请加这些：仿真过程中会陆续变成期望值
