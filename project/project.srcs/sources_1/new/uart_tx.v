@@ -9,7 +9,7 @@ module uart_tx(
 );
 
     // 波特率计数器 (50MHz / 115200波特率 ≈ 434)
-    parameter BAUD_CNT_MAX = 434; 
+    parameter BAUD_CNT_MAX = 868; 
     
     reg [15:0] baud_cnt;
     reg [3:0]  bit_cnt;//用来计数已发送的位数

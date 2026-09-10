@@ -7,8 +7,8 @@ module uart_rx(
     output reg rx_done      // 接收完成标志 (告诉CPU：快来拿数据！)
 );
 
-    parameter BAUD_CNT_MAX = 434;      // 115200波特率，一拍434个时钟
-    parameter BAUD_CNT_HALF = 217;     // 半拍217个时钟 (踩在正中间)
+    parameter BAUD_CNT_MAX = 868;      // 115200波特率，一拍434个时钟
+    parameter BAUD_CNT_HALF = 434;     // 半拍434个时钟 (踩在正中间)
     
     reg [15:0] baud_cnt;
     reg [3:0]  bit_cnt;

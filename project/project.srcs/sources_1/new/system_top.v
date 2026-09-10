@@ -1,77 +1,57 @@
 `timescale 1ns / 1ps
 
 module system_top(
-    input wire clk,       // 精工板时钟
-    input wire rst_n,     // 精工板复位键 (低有效)
-    input wire rx,        // 串口接收引脚
-    output wire tx        // 串口发送引脚
+    input wire clk,       
+    input wire rst_n,     
+    input wire rx,        
+    output wire tx,
+    output wire [7:0] led,    // 新增出板引脚
+    input wire [7:0] switch   // 新增出板引脚
 );
 
-    // 内部总线连线
-    wire        mem_we;
-    wire [31:0] mem_addr;
-    wire [31:0] mem_wdata;
-    wire [31:0] mem_rdata;
+    (* mark_debug = "true" *) wire        mem_we;
+    (* mark_debug = "true" *) wire [31:0] mem_addr;
+    (* mark_debug = "true" *) wire [31:0] mem_wdata;
+    (* mark_debug = "true" *) wire [31:0] mem_rdata;
     
-    // CPU 例化
     cpu_top u_cpu (
-        .clk            (clk),
-        .rst            (~rst_n),
-        .mem_we_o       (mem_we),
-        .mem_addr_o     (mem_addr),
-        .mem_wdata_o    (mem_wdata),
-        .mem_rdata_i    (mem_rdata),
-        .dbg_pc         (),
-        .dbg_stall      (),
-        .dbg_flush      (),
-        .dbg_reg_data   (),
-        .dbg_reg_addr   (5'd0),
-        .dbg_uaddr      (),
-        .dbg_overflow   (),
-        .dbg_epc        (),
-        .dbg_perf_cycles(),
-        .dbg_perf_inst  (),
-        .dbg_perf_stall (),
-        .dbg_perf_flush ()
+        .clk        (clk),
+        .rst        (~rst_n),
+        .mem_we_o   (mem_we),
+        .mem_addr_o (mem_addr),
+        .mem_wdata_o(mem_wdata),
+        .mem_rdata_i(mem_rdata),
+        .dbg_pc() 
     );
 
-    // ==========================================
-    // 交通警察 (Address Decoder)
-    // 规定：地址最高位是 8 (0x8000_XXXX)，属于 UART
-    //       地址最高位是 0 (0x0000_XXXX)，属于 RAM
-    // ==========================================
-    wire is_uart = (mem_addr[31:28] == 4'h8); 
+    wire is_mmio = (mem_addr[31:28] == 4'h8); 
     wire is_ram  = (mem_addr[31:28] == 4'h0);
     
-    wire uart_we = mem_we & is_uart;
+    wire mmio_we = mem_we & is_mmio;
     wire ram_we  = mem_we & is_ram;
     
-    wire [31:0] uart_rdata;
+    wire [31:0] mmio_rdata;
     wire [31:0] ram_rdata;
     
-    // 数据多路选择器：谁的地址被访问，就把谁的数据传给 CPU
-    assign mem_rdata = is_uart ? uart_rdata : 
+    assign mem_rdata = is_mmio ? mmio_rdata : 
                        is_ram  ? ram_rdata : 32'd0;
 
-    // 例化数据内存 (原先在 CPU 肚子里的那个)
     dmem u_dmem (
-        .clk  (clk),
-        .we   (ram_we),
-        .addr (mem_addr),
-        .wdata(mem_wdata),
-        .rdata(ram_rdata)
+        .clk  (clk), .we   (ram_we), .addr (mem_addr),
+        .wdata(mem_wdata), .rdata(ram_rdata)
     );
 
-    // 例化你的 UART 控制器
-    uart_controller u_uart (
+    // 例化新的多功能控制器
+    mmio_controller u_mmio (
         .clk    (clk),
         .rst_n  (rst_n),
-        .we_i   (uart_we),
+        .we_i   (mmio_we),
         .addr_i (mem_addr),
         .wdata_i(mem_wdata),
-        .rdata_o(uart_rdata),
+        .rdata_o(mmio_rdata),
         .rx     (rx),
-        .tx     (tx)
+        .tx     (tx),
+        .led    (led),       // 连上
+        .switch (switch)     // 连上
     );
-
 endmodule
