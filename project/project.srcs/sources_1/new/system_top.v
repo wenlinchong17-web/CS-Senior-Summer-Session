@@ -1,23 +1,25 @@
 `timescale 1ns / 1ps
 
-module system_top(
-    input wire clk,       // ¾«¹¤°åÊ±ÖÓ
-    input wire rst_n,     // ¾«¹¤°å¸´Î»¼ü (µÍÓĞĞ§)
-    input wire rx,        // ´®¿Ú½ÓÊÕÒı½Å
-    output wire tx        // ´®¿Ú·¢ËÍÒı½Å
+// æ¿ä¸Šæ™¶æŒ¯æŒ‰ 100 MHzï¼ˆç²¾å·¥ Artix-7ï¼ŒT5ï¼‰ã€‚ä»¿çœŸ tb_uart ä»ç”¨æ¨¡å—é»˜è®¤ 50 MHzã€‚
+// è‹¥ 115200 ä»å¯¹ä¸é½ï¼ŒæŠŠ CLK_FREQ æ”¹å› 50_000_000ï¼ŒXDC å‘¨æœŸæ”¹å› 20 nsã€‚
+module system_top (
+    input  wire clk,
+    input  wire rst_n,
+    input  wire rx,
+    output wire tx
 );
 
-    // ÄÚ²¿×ÜÏßÁ¬Ïß
     wire        mem_we;
+    wire        mem_re;
     wire [31:0] mem_addr;
     wire [31:0] mem_wdata;
     wire [31:0] mem_rdata;
-    
-    // CPU Àı»¯
+
     cpu_top u_cpu (
         .clk            (clk),
         .rst            (~rst_n),
         .mem_we_o       (mem_we),
+        .mem_re_o       (mem_re),
         .mem_addr_o     (mem_addr),
         .mem_wdata_o    (mem_wdata),
         .mem_rdata_i    (mem_rdata),
@@ -35,25 +37,20 @@ module system_top(
         .dbg_perf_flush ()
     );
 
-    // ==========================================
-    // ½»Í¨¾¯²ì (Address Decoder)
-    // ¹æ¶¨£ºµØÖ·×î¸ßÎ»ÊÇ 8 (0x8000_XXXX)£¬ÊôÓÚ UART
-    //       µØÖ·×î¸ßÎ»ÊÇ 0 (0x0000_XXXX)£¬ÊôÓÚ RAM
-    // ==========================================
+    // 0x8xxx_xxxx â†’ UARTï¼›0x0xxx_xxxx â†’ RAM
     wire is_uart = (mem_addr[31:28] == 4'h8); 
     wire is_ram  = (mem_addr[31:28] == 4'h0);
     
     wire uart_we = mem_we & is_uart;
+    wire uart_re = mem_re & is_uart;
     wire ram_we  = mem_we & is_ram;
     
     wire [31:0] uart_rdata;
     wire [31:0] ram_rdata;
     
-    // Êı¾İ¶àÂ·Ñ¡ÔñÆ÷£ºË­µÄµØÖ·±»·ÃÎÊ£¬¾Í°ÑË­µÄÊı¾İ´«¸ø CPU
-    assign mem_rdata = is_uart ? uart_rdata : 
+    assign mem_rdata = is_uart ? uart_rdata :
                        is_ram  ? ram_rdata : 32'd0;
 
-    // Àı»¯Êı¾İÄÚ´æ (Ô­ÏÈÔÚ CPU ¶Ç×ÓÀïµÄÄÇ¸ö)
     dmem u_dmem (
         .clk  (clk),
         .we   (ram_we),
@@ -62,11 +59,15 @@ module system_top(
         .rdata(ram_rdata)
     );
 
-    // Àı»¯ÄãµÄ UART ¿ØÖÆÆ÷
-    uart_controller u_uart (
+    uart_controller #(
+        .CLK_FREQ(100_000_000),
+        .BAUD    (115200),
+        .HW_ECHO (0)
+    ) u_uart (
         .clk    (clk),
         .rst_n  (rst_n),
         .we_i   (uart_we),
+        .re_i   (uart_re),
         .addr_i (mem_addr),
         .wdata_i(mem_wdata),
         .rdata_o(uart_rdata),

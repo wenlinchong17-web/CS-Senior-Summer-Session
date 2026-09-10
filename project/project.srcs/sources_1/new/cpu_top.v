@@ -8,6 +8,7 @@ module cpu_top (
 
     // ======== 新增：数据总线接口 ========
     output wire        mem_we_o,    // CPU写使能
+    output wire        mem_re_o,    // CPU读使能（UART 清 rx_ready 用）
     output wire [31:0] mem_addr_o,  // CPU想访问的地址
     output wire [31:0] mem_wdata_o, // CPU想写出的数据
     input  wire [31:0] mem_rdata_i, // 外部给CPU读入的数据
@@ -260,6 +261,7 @@ module cpu_top (
     // MEM 级：将原先内部的 dmem 移除，将信号引出到外部总线
     // =========================================================================
     assign mem_we_o    = ctrl_m[`C_MEMWRITE]; // 把写使能送出去
+    assign mem_re_o    = ctrl_m[`C_MEMREAD];
     assign mem_addr_o  = alu_m_r;             // 把地址送出去
     assign mem_wdata_o = store_data_m;        // 把要写的数据送出去
     

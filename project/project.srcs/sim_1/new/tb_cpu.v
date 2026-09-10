@@ -19,6 +19,7 @@ module tb_cpu;
     wire [31:0] dbg_perf_flush;
 
     wire        mem_we;
+    wire        mem_re;
     wire [31:0] mem_addr;
     wire [31:0] mem_wdata;
     wire [31:0] mem_rdata;
@@ -27,6 +28,7 @@ module tb_cpu;
         .clk            (clk),
         .rst            (rst),
         .mem_we_o       (mem_we),
+        .mem_re_o       (mem_re),
         .mem_addr_o     (mem_addr),
         .mem_wdata_o    (mem_wdata),
         .mem_rdata_i    (mem_rdata),

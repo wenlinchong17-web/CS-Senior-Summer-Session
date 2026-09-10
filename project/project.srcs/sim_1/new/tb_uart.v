@@ -1,6 +1,7 @@
 `timescale 1ns / 1ps
 
-// 测 UART 外设（不跑 CPU）。时钟 50 MHz，与 BAUD_CNT_MAX=434 一致。
+// 测 UART 外设（不跑 CPU）。时钟 50 MHz，与模块默认 CLK_FREQ/BAUD=434 一致。
+// 上板 system_top 覆盖为 100 MHz / 115200 → 分频 868，不要拿本 TB 的 434 去对板上。
 // 一帧约 87 us。不要用 run all：时钟永不停止，wait 若没等到会把 XSim 卡死。
 // 正确做法：Launch 后执行  run 400us
 // 或把 Simulation Settings 里 xsim.simulate.runtime 改成 400us。
@@ -66,10 +67,11 @@ module tb_uart;
     wire [31:0] rdata_o;
     wire        c_tx;
 
-    uart_controller u_ctrl (
+    uart_controller #(.HALF_DUPLEX(0)) u_ctrl (
         .clk    (clk),
         .rst_n  (rst_n),
         .we_i   (we_i),
+        .re_i   (1'b0),
         .addr_i (addr_i),
         .wdata_i(wdata_i),
         .rdata_o(rdata_o),
