@@ -1,78 +1,57 @@
 `timescale 1ns / 1ps
 
-// æ¿ä¸Šæ™¶æŒ¯æŒ‰ 100 MHzï¼ˆç²¾å·¥ Artix-7ï¼ŒT5ï¼‰ã€‚ä»¿çœŸ tb_uart ä»ç”¨æ¨¡å—é»˜è®¤ 50 MHzã€‚
-// è‹¥ 115200 ä»å¯¹ä¸é½ï¼ŒæŠŠ CLK_FREQ æ”¹å› 50_000_000ï¼ŒXDC å‘¨æœŸæ”¹å› 20 nsã€‚
-module system_top (
-    input  wire clk,
-    input  wire rst_n,
-    input  wire rx,
-    output wire tx
+module system_top(
+    input wire clk,       
+    input wire rst_n,     
+    input wire rx,        
+    output wire tx,
+    output wire [7:0] led,    // ĞÂÔö³ö°åÒı½Å
+    input wire [7:0] switch   // ĞÂÔö³ö°åÒı½Å
 );
 
-    wire        mem_we;
-    wire        mem_re;
-    wire [31:0] mem_addr;
-    wire [31:0] mem_wdata;
-    wire [31:0] mem_rdata;
-
+    (* mark_debug = "true" *) wire        mem_we;
+    (* mark_debug = "true" *) wire [31:0] mem_addr;
+    (* mark_debug = "true" *) wire [31:0] mem_wdata;
+    (* mark_debug = "true" *) wire [31:0] mem_rdata;
+    
     cpu_top u_cpu (
-        .clk            (clk),
-        .rst            (~rst_n),
-        .mem_we_o       (mem_we),
-        .mem_re_o       (mem_re),
-        .mem_addr_o     (mem_addr),
-        .mem_wdata_o    (mem_wdata),
-        .mem_rdata_i    (mem_rdata),
-        .dbg_pc         (),
-        .dbg_stall      (),
-        .dbg_flush      (),
-        .dbg_reg_data   (),
-        .dbg_reg_addr   (5'd0),
-        .dbg_uaddr      (),
-        .dbg_overflow   (),
-        .dbg_epc        (),
-        .dbg_perf_cycles(),
-        .dbg_perf_inst  (),
-        .dbg_perf_stall (),
-        .dbg_perf_flush ()
+        .clk        (clk),
+        .rst        (~rst_n),
+        .mem_we_o   (mem_we),
+        .mem_addr_o (mem_addr),
+        .mem_wdata_o(mem_wdata),
+        .mem_rdata_i(mem_rdata),
+        .dbg_pc() 
     );
 
-    // 0x8xxx_xxxx â†’ UARTï¼›0x0xxx_xxxx â†’ RAM
-    wire is_uart = (mem_addr[31:28] == 4'h8); 
+    wire is_mmio = (mem_addr[31:28] == 4'h8); 
     wire is_ram  = (mem_addr[31:28] == 4'h0);
     
-    wire uart_we = mem_we & is_uart;
-    wire uart_re = mem_re & is_uart;
+    wire mmio_we = mem_we & is_mmio;
     wire ram_we  = mem_we & is_ram;
     
-    wire [31:0] uart_rdata;
+    wire [31:0] mmio_rdata;
     wire [31:0] ram_rdata;
     
-    assign mem_rdata = is_uart ? uart_rdata :
+    assign mem_rdata = is_mmio ? mmio_rdata : 
                        is_ram  ? ram_rdata : 32'd0;
 
     dmem u_dmem (
-        .clk  (clk),
-        .we   (ram_we),
-        .addr (mem_addr),
-        .wdata(mem_wdata),
-        .rdata(ram_rdata)
+        .clk  (clk), .we   (ram_we), .addr (mem_addr),
+        .wdata(mem_wdata), .rdata(ram_rdata)
     );
 
-    uart_controller #(
-        .CLK_FREQ(100_000_000),
-        .BAUD    (115200),
-        .HW_ECHO (0)
-    ) u_uart (
+    // Àı»¯ĞÂµÄ¶à¹¦ÄÜ¿ØÖÆÆ÷
+    mmio_controller u_mmio (
         .clk    (clk),
         .rst_n  (rst_n),
-        .we_i   (uart_we),
-        .re_i   (uart_re),
+        .we_i   (mmio_we),
         .addr_i (mem_addr),
         .wdata_i(mem_wdata),
-        .rdata_o(uart_rdata),
+        .rdata_o(mmio_rdata),
         .rx     (rx),
-        .tx     (tx)
+        .tx     (tx),
+        .led    (led),       // Á¬ÉÏ
+        .switch (switch)     // Á¬ÉÏ
     );
-
 endmodule

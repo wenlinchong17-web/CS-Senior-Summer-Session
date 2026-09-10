@@ -13,6 +13,9 @@ module uart_tx #(
     output reg        tx_busy
 );
 
+    // 波特率计数器 (50MHz / 115200波特率 ≈ 434)
+    parameter BAUD_CNT_MAX = 868; 
+    
     reg [15:0] baud_cnt;
     reg [3:0]  bit_cnt;
     reg [7:0]  tx_data_reg;
